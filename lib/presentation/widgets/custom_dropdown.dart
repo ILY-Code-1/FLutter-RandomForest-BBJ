@@ -1,5 +1,5 @@
 // File: custom_dropdown.dart
-// Deskripsi: Widget dropdown custom untuk form prediksi.
+// Deskripsi: Widget Dropdown custom yang reusable untuk form selection.
 
 import 'package:flutter/material.dart';
 import '../../core/theme/app_colors.dart';
@@ -9,16 +9,16 @@ class CustomDropdown<T> extends StatelessWidget {
   final String label;
   final T value;
   final List<T> items;
-  final ValueChanged<T?> onChanged;
   final String Function(T) itemLabel;
+  final ValueChanged<T?>? onChanged;
 
   const CustomDropdown({
     super.key,
     required this.label,
     required this.value,
     required this.items,
-    required this.onChanged,
     required this.itemLabel,
+    this.onChanged,
   });
 
   @override
@@ -28,13 +28,10 @@ class CustomDropdown<T> extends StatelessWidget {
       children: [
         Text(
           label,
-          style: AppTextStyles.labelLarge.copyWith(
-            color: AppColors.textPrimary,
-          ),
+          style: AppTextStyles.labelLarge,
         ),
         const SizedBox(height: 8),
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(8),
@@ -44,7 +41,8 @@ class CustomDropdown<T> extends StatelessWidget {
             child: DropdownButton<T>(
               value: value,
               isExpanded: true,
-              icon: const Icon(Icons.keyboard_arrow_down),
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              borderRadius: BorderRadius.circular(8),
               items: items.map((item) {
                 return DropdownMenuItem<T>(
                   value: item,

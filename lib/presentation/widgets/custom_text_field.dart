@@ -1,5 +1,5 @@
 // File: custom_text_field.dart
-// Deskripsi: Widget text field custom untuk form prediksi.
+// Deskripsi: Widget TextField custom yang reusable untuk form input.
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -11,13 +11,15 @@ class CustomTextField extends StatelessWidget {
   final String? hint;
   final TextEditingController? controller;
   final TextInputType keyboardType;
-  final bool readOnly;
-  final VoidCallback? onTap;
+  final List<TextInputFormatter>? inputFormatters;
   final ValueChanged<String>? onChanged;
   final String? Function(String?)? validator;
-  final List<TextInputFormatter>? inputFormatters;
+  final bool readOnly;
+  final VoidCallback? onTap;
   final Widget? suffixIcon;
+  final Widget? prefixIcon;
   final int maxLines;
+  final bool obscureText;
 
   const CustomTextField({
     super.key,
@@ -25,13 +27,15 @@ class CustomTextField extends StatelessWidget {
     this.hint,
     this.controller,
     this.keyboardType = TextInputType.text,
-    this.readOnly = false,
-    this.onTap,
+    this.inputFormatters,
     this.onChanged,
     this.validator,
-    this.inputFormatters,
+    this.readOnly = false,
+    this.onTap,
     this.suffixIcon,
+    this.prefixIcon,
     this.maxLines = 1,
+    this.obscureText = false,
   });
 
   @override
@@ -41,28 +45,33 @@ class CustomTextField extends StatelessWidget {
       children: [
         Text(
           label,
-          style: AppTextStyles.labelLarge.copyWith(
-            color: AppColors.textPrimary,
-          ),
+          style: AppTextStyles.labelLarge,
         ),
         const SizedBox(height: 8),
         TextFormField(
           controller: controller,
           keyboardType: keyboardType,
-          readOnly: readOnly,
-          onTap: onTap,
+          inputFormatters: inputFormatters,
           onChanged: onChanged,
           validator: validator,
-          inputFormatters: inputFormatters,
+          readOnly: readOnly,
+          onTap: onTap,
           maxLines: maxLines,
+          obscureText: obscureText,
+          style: AppTextStyles.bodyMedium,
           decoration: InputDecoration(
             hintText: hint,
             hintStyle: AppTextStyles.bodyMedium.copyWith(
               color: AppColors.textHint,
             ),
-            suffixIcon: suffixIcon,
             filled: true,
             fillColor: Colors.white,
+            suffixIcon: suffixIcon,
+            prefixIcon: prefixIcon,
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 14,
+            ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
               borderSide: const BorderSide(color: AppColors.border),
@@ -78,10 +87,6 @@ class CustomTextField extends StatelessWidget {
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
               borderSide: const BorderSide(color: AppColors.error),
-            ),
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 14,
             ),
           ),
         ),

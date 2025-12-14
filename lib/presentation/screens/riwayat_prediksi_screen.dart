@@ -1,5 +1,6 @@
 // File: riwayat_prediksi_screen.dart
 // Deskripsi: Screen untuk menampilkan daftar riwayat prediksi.
+// Setiap item berupa card hijau dengan format tanggal dan tombol aksi.
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -7,7 +8,8 @@ import '../../controllers/prediction_controller.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../routes/app_routes.dart';
-import '../widgets/prediction_list_item.dart';
+import '../widgets/custom_app_bar.dart';
+import '../widgets/riwayat_list_item.dart';
 
 class RiwayatPrediksiScreen extends StatelessWidget {
   const RiwayatPrediksiScreen({super.key});
@@ -18,63 +20,37 @@ class RiwayatPrediksiScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: AppColors.background,
+      appBar: const CustomAppBar(
+        title: 'RIWAYAT PREDIKSI',
+      ),
       body: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Riwayat Prediksi', style: AppTextStyles.h1),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Daftar semua hasil prediksi stunting',
-                    style: AppTextStyles.bodyMedium.copyWith(
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Expanded(
-              child: Obx(() {
-                if (controller.predictions.isEmpty) {
-                  return _buildEmptyState();
-                }
+        child: Obx(() {
+          if (controller.predictionSessions.isEmpty) {
+            return _buildEmptyState();
+          }
 
-                return LayoutBuilder(
-                  builder: (context, constraints) {
-                    return ListView.builder(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      itemCount: controller.predictions.length,
-                      itemBuilder: (context, index) {
-                        final prediction = controller.predictions[index];
-                        return PredictionListItem(
-                          prediction: prediction,
-                          onTap: () {
-                            Get.toNamed(
-                              AppRoutes.detail,
-                              arguments: prediction,
-                            );
-                          },
-                          onEdit: () {
-                            controller.setEditMode(prediction);
-                            Get.toNamed(AppRoutes.form);
-                          },
-                          onDelete: () {
-                            _showDeleteDialog(context, controller, prediction.id);
-                          },
-                        );
-                      },
-                    );
-                  },
-                );
-              }),
-            ),
-          ],
-        ),
+          return LayoutBuilder(
+            builder: (context, constraints) {
+              return ListView.builder(
+                padding: const EdgeInsets.all(16),
+                itemCount: controller.predictionSessions.length,
+                itemBuilder: (context, index) {
+                  final session = controller.predictionSessions[index];
+                  return RiwayatListItem(
+                    session: session,
+                    onView: () {
+                      controller.setCurrentSession(session);
+                      Get.toNamed(AppRoutes.detail);
+                    },
+                    onDelete: () {
+                      _showDeleteDialog(context, controller, session.id);
+                    },
+                  );
+                },
+              );
+            },
+          );
+        }),
       ),
     );
   }
@@ -113,8 +89,8 @@ class RiwayatPrediksiScreen extends StatelessWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Hapus Prediksi'),
-        content: const Text('Apakah Anda yakin ingin menghapus data ini?'),
+        title: const Text('Hapus Riwayat'),
+        content: const Text('Apakah Anda yakin ingin menghapus riwayat ini?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -123,7 +99,7 @@ class RiwayatPrediksiScreen extends StatelessWidget {
           TextButton(
             onPressed: () {
               Navigator.pop(context);
-              controller.deletePrediction(id);
+              controller.deleteSession(id);
             },
             child: Text(
               'Hapus',

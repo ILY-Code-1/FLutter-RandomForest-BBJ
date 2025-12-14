@@ -9,4 +9,16 @@ class NavigationController extends GetxController {
   void changePage(int index) {
     currentIndex.value = index;
   }
+
+  void goToHome() {
+    currentIndex.value = 0;
+  }
+
+  void goToAddPrediction() {
+    currentIndex.value = 1;
+  }
+
+  void goToHistory() {
+    currentIndex.value = 2;
+  }
 }

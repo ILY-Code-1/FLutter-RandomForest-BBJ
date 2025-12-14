@@ -1,5 +1,5 @@
 // File: app_theme.dart
-// Deskripsi: Konfigurasi tema utama aplikasi (ThemeData).
+// Deskripsi: Konfigurasi tema utama aplikasi BPR Bogor Jabar.
 
 import 'package:flutter/material.dart';
 import 'app_colors.dart';
@@ -24,6 +24,11 @@ class AppTheme {
         foregroundColor: Colors.white,
         elevation: 0,
         centerTitle: true,
+        titleTextStyle: TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.bold,
+          color: Colors.white,
+        ),
       ),
       cardTheme: CardThemeData(
         color: AppColors.cardBackground,

@@ -6,7 +6,6 @@ import '../controllers/prediction_controller.dart';
 import '../controllers/navigation_controller.dart';
 import '../presentation/screens/main_screen.dart';
 import '../presentation/screens/detail_prediksi_screen.dart';
-import '../presentation/screens/form_prediksi_screen.dart';
 import 'app_routes.dart';
 
 class AppPages {
@@ -24,10 +23,6 @@ class AppPages {
     GetPage(
       name: AppRoutes.detail,
       page: () => const DetailPrediksiScreen(),
-    ),
-    GetPage(
-      name: AppRoutes.form,
-      page: () => const FormPrediksiScreen(),
     ),
   ];
 }

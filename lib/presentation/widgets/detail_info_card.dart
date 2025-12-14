@@ -1,9 +1,21 @@
 // File: detail_info_card.dart
-// Deskripsi: Widget card untuk menampilkan detail informasi prediksi.
+// Deskripsi: Widget card untuk menampilkan detail informasi dengan list items.
 
 import 'package:flutter/material.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
+
+class DetailInfoItem {
+  final IconData icon;
+  final String label;
+  final String value;
+
+  const DetailInfoItem({
+    required this.icon,
+    required this.label,
+    required this.value,
+  });
+}
 
 class DetailInfoCard extends StatelessWidget {
   final String title;
@@ -18,7 +30,6 @@ class DetailInfoCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -34,21 +45,34 @@ class DetailInfoCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title, style: AppTextStyles.h4),
+          Text(
+            title,
+            style: AppTextStyles.h4,
+          ),
           const SizedBox(height: 16),
-          ...items.map((item) => _buildInfoRow(item)),
+          ...items.map((item) => _buildItem(item)),
         ],
       ),
     );
   }
 
-  Widget _buildInfoRow(DetailInfoItem item) {
+  Widget _buildItem(DetailInfoItem item) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(item.icon, size: 20, color: AppColors.textSecondary),
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: AppColors.primary.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(
+              item.icon,
+              color: AppColors.primary,
+              size: 20,
+            ),
+          ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -56,9 +80,8 @@ class DetailInfoCard extends StatelessWidget {
               children: [
                 Text(
                   item.label,
-                  style: AppTextStyles.labelMedium,
+                  style: AppTextStyles.caption,
                 ),
-                const SizedBox(height: 2),
                 Text(
                   item.value,
                   style: AppTextStyles.bodyMedium.copyWith(
@@ -72,16 +95,4 @@ class DetailInfoCard extends StatelessWidget {
       ),
     );
   }
-}
-
-class DetailInfoItem {
-  final IconData icon;
-  final String label;
-  final String value;
-
-  const DetailInfoItem({
-    required this.icon,
-    required this.label,
-    required this.value,
-  });
 }

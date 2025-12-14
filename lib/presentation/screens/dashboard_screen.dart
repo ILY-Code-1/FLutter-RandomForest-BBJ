@@ -1,13 +1,14 @@
 // File: dashboard_screen.dart
-// Deskripsi: Screen dashboard utama yang menampilkan statistik prediksi.
+// Deskripsi: Screen Dashboard/Home yang menampilkan info Random Forest,
+// statistik hasil prediksi, dan cara kerja Random Forest.
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../controllers/prediction_controller.dart';
-import '../../controllers/navigation_controller.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
-import '../widgets/stat_card.dart';
+import '../widgets/custom_app_bar.dart';
+import '../widgets/info_card.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
@@ -18,6 +19,10 @@ class DashboardScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: AppColors.background,
+      appBar: const CustomAppBar(
+        title: 'BPR BOGOR JABAR RANDOM FOREST APP',
+        showLogo: true,
+      ),
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
@@ -26,11 +31,11 @@ class DashboardScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildHeader(),
-                  const SizedBox(height: 24),
-                  _buildStatisticsGrid(controller, constraints),
-                  const SizedBox(height: 24),
-                  _buildRecentPredictions(controller),
+                  _buildRandomForestInfo(),
+                  const SizedBox(height: 16),
+                  _buildHasilPrediksi(controller),
+                  const SizedBox(height: 16),
+                  _buildCaraKerja(),
                 ],
               ),
             );
@@ -40,122 +45,41 @@ class DashboardScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildHeader() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Dashboard',
-          style: AppTextStyles.h1,
+  Widget _buildRandomForestInfo() {
+    return InfoCard(
+      title: 'APA ITU RANDOM FOREST?',
+      description:
+          'Random Forest adalah algoritma machine learning yang menggunakan banyak pohon keputusan (decision tree) untuk membuat prediksi. Setiap pohon memberikan "suara" dan hasil akhir ditentukan berdasarkan suara terbanyak (voting). Metode ini sangat efektif untuk klasifikasi dan prediksi karena menggabungkan kekuatan banyak model.',
+      illustration: Container(
+        height: 80,
+        decoration: BoxDecoration(
+          color: AppColors.secondary.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(8),
         ),
-        const SizedBox(height: 4),
-        Text(
-          'Selamat datang di Sistem Prediksi Stunting',
-          style: AppTextStyles.bodyMedium.copyWith(
-            color: AppColors.textSecondary,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildStatisticsGrid(
-      PredictionController controller, BoxConstraints constraints) {
-    return Obx(() {
-      final crossAxisCount = constraints.maxWidth > 600 ? 4 : 2;
-      final childAspectRatio = constraints.maxWidth > 600 ? 1.2 : 1.1;
-
-      return GridView.count(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        crossAxisCount: crossAxisCount,
-        crossAxisSpacing: 12,
-        mainAxisSpacing: 12,
-        childAspectRatio: childAspectRatio,
-        children: [
-          StatCard(
-            title: 'Total Prediksi',
-            value: controller.totalPrediksi.toString(),
-            icon: Icons.analytics_outlined,
-            color: AppColors.chartBlue,
-          ),
-          StatCard(
-            title: 'Normal',
-            value: controller.totalNormal.toString(),
-            icon: Icons.check_circle_outline,
-            color: AppColors.success,
-          ),
-          StatCard(
-            title: 'Stunting Ringan',
-            value: controller.totalStuntingRingan.toString(),
-            icon: Icons.warning_amber_outlined,
-            color: AppColors.warning,
-          ),
-          StatCard(
-            title: 'Stunting Berat',
-            value: controller.totalStuntingBerat.toString(),
-            icon: Icons.error_outline,
-            color: AppColors.error,
-          ),
-        ],
-      );
-    });
-  }
-
-  Widget _buildRecentPredictions(PredictionController controller) {
-    return Obx(() {
-      final recentPredictions = controller.predictions.take(3).toList();
-
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text('Prediksi Terbaru', style: AppTextStyles.h3),
-              TextButton(
-                onPressed: () {
-                  Get.find<NavigationController>().changePage(1);
-                },
-                child: Text(
-                  'Lihat Semua',
-                  style: AppTextStyles.labelLarge.copyWith(
-                    color: AppColors.primary,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          if (recentPredictions.isEmpty)
-            _buildEmptyState()
-          else
-            ...recentPredictions.map((prediction) => _buildRecentItem(prediction)),
-        ],
-      );
-    });
-  }
-
-  Widget _buildEmptyState() {
-    return Container(
-      padding: const EdgeInsets.all(32),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Center(
-        child: Column(
+        child: Stack(
+          alignment: Alignment.center,
           children: [
             Icon(
-              Icons.inbox_outlined,
-              size: 48,
-              color: AppColors.textHint,
+              Icons.park,
+              size: 50,
+              color: AppColors.secondary,
             ),
-            const SizedBox(height: 12),
-            Text(
-              'Belum ada data prediksi',
-              style: AppTextStyles.bodyMedium.copyWith(
-                color: AppColors.textSecondary,
+            Positioned(
+              right: 5,
+              bottom: 5,
+              child: Icon(
+                Icons.park,
+                size: 30,
+                color: AppColors.secondary.withValues(alpha: 0.6),
+              ),
+            ),
+            Positioned(
+              left: 5,
+              bottom: 10,
+              child: Icon(
+                Icons.park,
+                size: 25,
+                color: AppColors.secondary.withValues(alpha: 0.4),
               ),
             ),
           ],
@@ -164,76 +88,104 @@ class DashboardScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildRecentItem(prediction) {
-    Color statusColor;
-    switch (prediction.hasilPrediksi) {
-      case 'Normal':
-        statusColor = AppColors.success;
-        break;
-      case 'Stunting Ringan':
-        statusColor = AppColors.warning;
-        break;
-      case 'Stunting Berat':
-        statusColor = AppColors.error;
-        break;
-      default:
-        statusColor = AppColors.textSecondary;
-    }
+  Widget _buildHasilPrediksi(PredictionController controller) {
+    return Obx(() => GreenInfoCard(
+          title: 'Hasil Prediksi',
+          child: Row(
+            children: [
+              Expanded(
+                child: YellowStatBox(
+                  icon: Icons.person,
+                  label: 'Nasabah Aktif',
+                  value: controller.totalNasabahAktif.toString(),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: YellowStatBox(
+                  icon: Icons.person_off,
+                  label: 'Nasabah Tidak Aktif',
+                  value: controller.totalNasabahTidakAktif.toString(),
+                ),
+              ),
+            ],
+          ),
+        ));
+  }
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Row(
+  Widget _buildCaraKerja() {
+    return GreenInfoCard(
+      title: 'Cara Kerja Random Forest',
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: statusColor.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Icon(
-              Icons.person_outline,
-              color: statusColor,
-            ),
+          _buildCaraKerjaItem(
+            '1',
+            'Data Training',
+            'Dataset nasabah digunakan untuk melatih multiple decision trees dengan sampling acak.',
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  prediction.namaBalita,
-                  style: AppTextStyles.labelLarge,
-                ),
-                Text(
-                  prediction.hasilPrediksi,
-                  style: AppTextStyles.bodySmall.copyWith(
-                    color: statusColor,
-                  ),
-                ),
-              ],
-            ),
+          const SizedBox(height: 12),
+          _buildCaraKerjaItem(
+            '2',
+            'Prediksi Pohon',
+            'Setiap pohon keputusan membuat prediksi independen berdasarkan fitur nasabah.',
           ),
-          Icon(
-            Icons.chevron_right,
-            color: AppColors.textSecondary,
+          const SizedBox(height: 12),
+          _buildCaraKerjaItem(
+            '3',
+            'Voting Majority',
+            'Hasil akhir ditentukan berdasarkan suara terbanyak dari semua pohon keputusan.',
           ),
         ],
       ),
     );
   }
+
+  Widget _buildCaraKerjaItem(String number, String title, String description) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          width: 28,
+          height: 28,
+          decoration: BoxDecoration(
+            color: AppColors.accent,
+            borderRadius: BorderRadius.circular(14),
+          ),
+          child: Center(
+            child: Text(
+              number,
+              style: AppTextStyles.labelLarge.copyWith(
+                color: AppColors.textPrimary,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: AppTextStyles.labelLarge.copyWith(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                description,
+                style: AppTextStyles.bodySmall.copyWith(
+                  color: Colors.white.withValues(alpha: 0.9),
+                  height: 1.3,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
 }
-
-

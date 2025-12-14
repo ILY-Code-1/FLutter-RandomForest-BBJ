@@ -1,38 +1,57 @@
 // File: prediction_controller.dart
-// Deskripsi: GetX Controller untuk mengelola state prediksi.
+// Deskripsi: GetX Controller untuk mengelola state prediksi nasabah.
 // Menangani CRUD operasi pada list prediksi dan form state.
 
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../data/models/prediction_model.dart';
 
 class PredictionController extends GetxController {
-  // Observable list untuk menyimpan semua prediksi
-  final RxList<PredictionModel> predictions = <PredictionModel>[].obs;
+  // Observable list untuk menyimpan semua session prediksi
+  final RxList<PredictionSessionModel> predictionSessions = <PredictionSessionModel>[].obs;
+
+  // Temporary list untuk nasabah yang akan di-submit
+  final RxList<NasabahModel> tempNasabahList = <NasabahModel>[].obs;
 
   // State untuk mode edit
-  final Rx<PredictionModel?> editingPrediction = Rx<PredictionModel?>(null);
+  final Rx<NasabahModel?> editingNasabah = Rx<NasabahModel?>(null);
   final RxBool isEditMode = false.obs;
+  final RxInt editingIndex = (-1).obs;
+
+  // Form controllers
+  final idNasabahController = TextEditingController();
+  final usiaController = TextEditingController();
+  final pekerjaanController = TextEditingController();
+  final pendapatanController = TextEditingController();
+  final frekuensiController = TextEditingController();
+  final saldoController = TextEditingController();
+  final lamaController = TextEditingController();
 
   // Form fields - menggunakan Rx untuk reactive updates
-  final RxString namaBalita = ''.obs;
-  final RxString tanggalLahir = ''.obs;
   final RxString jenisKelamin = 'Laki-laki'.obs;
-  final RxDouble beratBadan = 0.0.obs;
-  final RxDouble tinggiBadan = 0.0.obs;
-  final RxDouble lingkarLengan = 0.0.obs;
-  final RxDouble lingkarKepala = 0.0.obs;
+  final RxString statusNasabah = 'Aktif'.obs;
+
+  // Current session being viewed
+  final Rx<PredictionSessionModel?> currentSession = Rx<PredictionSessionModel?>(null);
 
   // Statistik dashboard
-  int get totalPrediksi => predictions.length;
+  int get totalSessions => predictionSessions.length;
 
-  int get totalNormal =>
-      predictions.where((p) => p.hasilPrediksi == 'Normal').length;
+  int get totalNasabahAktif {
+    int count = 0;
+    for (var session in predictionSessions) {
+      count += session.nasabahAktif;
+    }
+    return count;
+  }
 
-  int get totalStuntingRingan =>
-      predictions.where((p) => p.hasilPrediksi == 'Stunting Ringan').length;
-
-  int get totalStuntingBerat =>
-      predictions.where((p) => p.hasilPrediksi == 'Stunting Berat').length;
+  int get totalNasabahTidakAktif {
+    int count = 0;
+    for (var session in predictionSessions) {
+      count += session.nasabahTidakAktif;
+    }
+    return count;
+  }
 
   @override
   void onInit() {
@@ -40,188 +59,301 @@ class PredictionController extends GetxController {
     _loadDummyData();
   }
 
+  @override
+  void onClose() {
+    idNasabahController.dispose();
+    usiaController.dispose();
+    pekerjaanController.dispose();
+    pendapatanController.dispose();
+    frekuensiController.dispose();
+    saldoController.dispose();
+    lamaController.dispose();
+    super.onClose();
+  }
+
   // Load dummy data saat pertama kali
   void _loadDummyData() {
-    predictions.addAll([
-      PredictionModel(
-        id: '1',
-        namaBalita: 'Ahmad Fauzi',
-        tanggalLahir: '2022-03-15',
-        jenisKelamin: 'Laki-laki',
-        beratBadan: 12.5,
-        tinggiBadan: 85.0,
-        lingkarLengan: 14.5,
-        lingkarKepala: 46.0,
-        hasilPrediksi: 'Normal',
-        statusGizi: 'Gizi Baik',
-        tanggalPrediksi: DateTime.now().subtract(const Duration(days: 5)),
-      ),
-      PredictionModel(
-        id: '2',
-        namaBalita: 'Siti Aisyah',
-        tanggalLahir: '2021-08-20',
-        jenisKelamin: 'Perempuan',
-        beratBadan: 10.2,
-        tinggiBadan: 80.0,
-        lingkarLengan: 12.5,
-        lingkarKepala: 44.0,
-        hasilPrediksi: 'Stunting Ringan',
-        statusGizi: 'Gizi Kurang',
-        tanggalPrediksi: DateTime.now().subtract(const Duration(days: 3)),
-      ),
-      PredictionModel(
-        id: '3',
-        namaBalita: 'Budi Santoso',
-        tanggalLahir: '2022-01-10',
-        jenisKelamin: 'Laki-laki',
-        beratBadan: 8.5,
-        tinggiBadan: 75.0,
-        lingkarLengan: 11.0,
-        lingkarKepala: 42.0,
-        hasilPrediksi: 'Stunting Berat',
-        statusGizi: 'Gizi Buruk',
-        tanggalPrediksi: DateTime.now().subtract(const Duration(days: 1)),
-      ),
-    ]);
+    final dummyNasabah1 = NasabahModel(
+      id: '1',
+      idNasabah: 'NSB001',
+      usia: 35,
+      jenisKelamin: 'Laki-laki',
+      pekerjaan: 'Wiraswasta',
+      pendapatanBulanan: 8000000,
+      frekuensiTransaksi: 15,
+      saldoRataRata: 5000000,
+      lamaMenjadiNasabah: 3,
+      statusNasabah: 'Aktif',
+      prediksiAwal: 'Aktif',
+      prediksiPohon: ['Aktif', 'Aktif', 'Tidak Aktif'],
+      finalPrediksi: 'Aktif',
+      evaluasi: 'Benar',
+    );
+
+    final dummyNasabah2 = NasabahModel(
+      id: '2',
+      idNasabah: 'NSB002',
+      usia: 28,
+      jenisKelamin: 'Perempuan',
+      pekerjaan: 'Karyawan Swasta',
+      pendapatanBulanan: 5000000,
+      frekuensiTransaksi: 5,
+      saldoRataRata: 2000000,
+      lamaMenjadiNasabah: 1,
+      statusNasabah: 'Tidak Aktif',
+      prediksiAwal: 'Tidak Aktif',
+      prediksiPohon: ['Tidak Aktif', 'Aktif', 'Tidak Aktif'],
+      finalPrediksi: 'Tidak Aktif',
+      evaluasi: 'Benar',
+    );
+
+    final dummyNasabah3 = NasabahModel(
+      id: '3',
+      idNasabah: 'NSB003',
+      usia: 45,
+      jenisKelamin: 'Laki-laki',
+      pekerjaan: 'PNS',
+      pendapatanBulanan: 10000000,
+      frekuensiTransaksi: 20,
+      saldoRataRata: 15000000,
+      lamaMenjadiNasabah: 5,
+      statusNasabah: 'Aktif',
+      prediksiAwal: 'Aktif',
+      prediksiPohon: ['Aktif', 'Aktif', 'Aktif'],
+      finalPrediksi: 'Aktif',
+      evaluasi: 'Benar',
+    );
+
+    predictionSessions.add(PredictionSessionModel(
+      id: '1',
+      tanggalPrediksi: DateTime.now().subtract(const Duration(days: 1)),
+      nasabahList: [dummyNasabah1, dummyNasabah2, dummyNasabah3],
+      akurasi: 66.67,
+    ));
+
+    predictionSessions.add(PredictionSessionModel(
+      id: '2',
+      tanggalPrediksi: DateTime.now().subtract(const Duration(hours: 5)),
+      nasabahList: [dummyNasabah1, dummyNasabah2],
+      akurasi: 50.0,
+    ));
   }
 
-  // Tambah prediksi baru
-  void addPrediction() {
-    final hasil = PredictionModel.generateDummyResult(
-      tinggiBadan.value,
-      beratBadan.value,
-    );
+  // Tambah nasabah ke temporary list
+  void addNasabahToTemp() {
+    if (!validateForm()) return;
 
-    final newPrediction = PredictionModel(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      namaBalita: namaBalita.value,
-      tanggalLahir: tanggalLahir.value,
-      jenisKelamin: jenisKelamin.value,
-      beratBadan: beratBadan.value,
-      tinggiBadan: tinggiBadan.value,
-      lingkarLengan: lingkarLengan.value,
-      lingkarKepala: lingkarKepala.value,
-      hasilPrediksi: hasil,
-      statusGizi: PredictionModel.generateStatusGizi(hasil),
-      tanggalPrediksi: DateTime.now(),
-    );
-
-    predictions.add(newPrediction);
+    final newNasabah = _createNasabahFromForm();
+    tempNasabahList.add(newNasabah);
     clearForm();
-    Get.back();
+    
     Get.snackbar(
       'Berhasil',
-      'Data prediksi berhasil ditambahkan',
+      'Nasabah berhasil ditambahkan ke daftar',
       snackPosition: SnackPosition.BOTTOM,
+      backgroundColor: Colors.green,
+      colorText: Colors.white,
     );
   }
 
-  // Update prediksi existing
-  void updatePrediction() {
-    if (editingPrediction.value == null) return;
+  // Update nasabah di temporary list
+  void updateNasabahInTemp() {
+    if (!validateForm()) return;
+    if (editingIndex.value < 0) return;
 
-    final hasil = PredictionModel.generateDummyResult(
-      tinggiBadan.value,
-      beratBadan.value,
-    );
-
-    final index = predictions.indexWhere(
-      (p) => p.id == editingPrediction.value!.id,
-    );
-
-    if (index != -1) {
-      predictions[index] = editingPrediction.value!.copyWith(
-        namaBalita: namaBalita.value,
-        tanggalLahir: tanggalLahir.value,
-        jenisKelamin: jenisKelamin.value,
-        beratBadan: beratBadan.value,
-        tinggiBadan: tinggiBadan.value,
-        lingkarLengan: lingkarLengan.value,
-        lingkarKepala: lingkarKepala.value,
-        hasilPrediksi: hasil,
-        statusGizi: PredictionModel.generateStatusGizi(hasil),
-        tanggalPrediksi: DateTime.now(),
-      );
-    }
-
+    final updatedNasabah = _createNasabahFromForm();
+    tempNasabahList[editingIndex.value] = updatedNasabah;
+    
     clearForm();
-    Get.back();
-    Get.snackbar(
-      'Berhasil',
-      'Data prediksi berhasil diperbarui',
-      snackPosition: SnackPosition.BOTTOM,
-    );
-  }
-
-  // Set mode edit dan isi form dengan data existing
-  void setEditMode(PredictionModel prediction) {
-    editingPrediction.value = prediction;
-    isEditMode.value = true;
-    namaBalita.value = prediction.namaBalita;
-    tanggalLahir.value = prediction.tanggalLahir;
-    jenisKelamin.value = prediction.jenisKelamin;
-    beratBadan.value = prediction.beratBadan;
-    tinggiBadan.value = prediction.tinggiBadan;
-    lingkarLengan.value = prediction.lingkarLengan;
-    lingkarKepala.value = prediction.lingkarKepala;
-  }
-
-  // Hapus prediksi
-  void deletePrediction(String id) {
-    predictions.removeWhere((p) => p.id == id);
-    Get.snackbar(
-      'Berhasil',
-      'Data prediksi berhasil dihapus',
-      snackPosition: SnackPosition.BOTTOM,
-    );
-  }
-
-  // Clear form dan reset edit mode
-  void clearForm() {
-    editingPrediction.value = null;
     isEditMode.value = false;
-    namaBalita.value = '';
-    tanggalLahir.value = '';
-    jenisKelamin.value = 'Laki-laki';
-    beratBadan.value = 0.0;
-    tinggiBadan.value = 0.0;
-    lingkarLengan.value = 0.0;
-    lingkarKepala.value = 0.0;
+    editingIndex.value = -1;
+    
+    Get.snackbar(
+      'Berhasil',
+      'Data nasabah berhasil diperbarui',
+      snackPosition: SnackPosition.BOTTOM,
+      backgroundColor: Colors.green,
+      colorText: Colors.white,
+    );
   }
 
-  // Validasi form sederhana
+  // Create NasabahModel from form
+  NasabahModel _createNasabahFromForm() {
+    final status = statusNasabah.value;
+    final prediksiPohon = NasabahModel.generateDummyPohonPrediksi();
+    final finalPred = NasabahModel.generateDummyPrediksi(status);
+    
+    return NasabahModel(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      idNasabah: idNasabahController.text,
+      usia: int.tryParse(usiaController.text) ?? 0,
+      jenisKelamin: jenisKelamin.value,
+      pekerjaan: pekerjaanController.text,
+      pendapatanBulanan: double.tryParse(pendapatanController.text) ?? 0,
+      frekuensiTransaksi: int.tryParse(frekuensiController.text) ?? 0,
+      saldoRataRata: double.tryParse(saldoController.text) ?? 0,
+      lamaMenjadiNasabah: int.tryParse(lamaController.text) ?? 0,
+      statusNasabah: status,
+      prediksiAwal: status == 'Aktif' ? 'Aktif' : 'Tidak Aktif',
+      prediksiPohon: prediksiPohon,
+      finalPrediksi: finalPred,
+      evaluasi: finalPred == status ? 'Benar' : 'Salah',
+    );
+  }
+
+  // Set mode edit dengan data nasabah dari temp list
+  void setEditModeFromTemp(int index) {
+    if (index < 0 || index >= tempNasabahList.length) return;
+    
+    final nasabah = tempNasabahList[index];
+    editingIndex.value = index;
+    isEditMode.value = true;
+    
+    idNasabahController.text = nasabah.idNasabah;
+    usiaController.text = nasabah.usia.toString();
+    jenisKelamin.value = nasabah.jenisKelamin;
+    pekerjaanController.text = nasabah.pekerjaan;
+    pendapatanController.text = nasabah.pendapatanBulanan.toStringAsFixed(0);
+    frekuensiController.text = nasabah.frekuensiTransaksi.toString();
+    saldoController.text = nasabah.saldoRataRata.toStringAsFixed(0);
+    lamaController.text = nasabah.lamaMenjadiNasabah.toString();
+    statusNasabah.value = nasabah.statusNasabah;
+  }
+
+  // Submit semua data dan buat session baru
+  void submitPrediction() {
+    if (tempNasabahList.isEmpty) {
+      Get.snackbar(
+        'Error',
+        'Tambahkan minimal 1 data nasabah terlebih dahulu',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+      return;
+    }
+
+    // Calculate dummy accuracy
+    int benar = tempNasabahList.where((n) => n.evaluasi == 'Benar').length;
+    double akurasi = (benar / tempNasabahList.length) * 100;
+
+    final newSession = PredictionSessionModel(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      tanggalPrediksi: DateTime.now(),
+      nasabahList: List.from(tempNasabahList),
+      akurasi: akurasi,
+    );
+
+    predictionSessions.insert(0, newSession);
+    tempNasabahList.clear();
+    clearForm();
+
+    Get.snackbar(
+      'Berhasil',
+      'Data prediksi berhasil disimpan',
+      snackPosition: SnackPosition.BOTTOM,
+      backgroundColor: Colors.green,
+      colorText: Colors.white,
+    );
+  }
+
+  // Hapus session prediksi
+  void deleteSession(String id) {
+    predictionSessions.removeWhere((s) => s.id == id);
+    Get.snackbar(
+      'Berhasil',
+      'Riwayat prediksi berhasil dihapus',
+      snackPosition: SnackPosition.BOTTOM,
+      backgroundColor: Colors.green,
+      colorText: Colors.white,
+    );
+  }
+
+  // Set current session untuk detail view
+  void setCurrentSession(PredictionSessionModel session) {
+    currentSession.value = session;
+  }
+
+  // Clear form
+  void clearForm() {
+    idNasabahController.clear();
+    usiaController.clear();
+    pekerjaanController.clear();
+    pendapatanController.clear();
+    frekuensiController.clear();
+    saldoController.clear();
+    lamaController.clear();
+    jenisKelamin.value = 'Laki-laki';
+    statusNasabah.value = 'Aktif';
+    isEditMode.value = false;
+    editingIndex.value = -1;
+    editingNasabah.value = null;
+  }
+
+  // Clear all temp data
+  void clearAllTemp() {
+    tempNasabahList.clear();
+    clearForm();
+  }
+
+  // Validasi form
   bool validateForm() {
-    if (namaBalita.value.isEmpty) {
-      Get.snackbar('Error', 'Nama balita tidak boleh kosong',
-          snackPosition: SnackPosition.BOTTOM);
+    if (idNasabahController.text.isEmpty) {
+      Get.snackbar('Error', 'ID Nasabah tidak boleh kosong',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.red,
+          colorText: Colors.white);
       return false;
     }
-    if (tanggalLahir.value.isEmpty) {
-      Get.snackbar('Error', 'Tanggal lahir tidak boleh kosong',
-          snackPosition: SnackPosition.BOTTOM);
+    if (usiaController.text.isEmpty) {
+      Get.snackbar('Error', 'Usia tidak boleh kosong',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.red,
+          colorText: Colors.white);
       return false;
     }
-    if (beratBadan.value <= 0) {
-      Get.snackbar('Error', 'Berat badan harus lebih dari 0',
-          snackPosition: SnackPosition.BOTTOM);
+    if (pekerjaanController.text.isEmpty) {
+      Get.snackbar('Error', 'Pekerjaan tidak boleh kosong',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.red,
+          colorText: Colors.white);
       return false;
     }
-    if (tinggiBadan.value <= 0) {
-      Get.snackbar('Error', 'Tinggi badan harus lebih dari 0',
-          snackPosition: SnackPosition.BOTTOM);
+    if (pendapatanController.text.isEmpty) {
+      Get.snackbar('Error', 'Pendapatan bulanan tidak boleh kosong',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.red,
+          colorText: Colors.white);
+      return false;
+    }
+    if (frekuensiController.text.isEmpty) {
+      Get.snackbar('Error', 'Frekuensi transaksi tidak boleh kosong',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.red,
+          colorText: Colors.white);
+      return false;
+    }
+    if (saldoController.text.isEmpty) {
+      Get.snackbar('Error', 'Saldo rata-rata tidak boleh kosong',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.red,
+          colorText: Colors.white);
+      return false;
+    }
+    if (lamaController.text.isEmpty) {
+      Get.snackbar('Error', 'Lama menjadi nasabah tidak boleh kosong',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.red,
+          colorText: Colors.white);
       return false;
     }
     return true;
   }
 
-  // Submit form (add atau update)
-  void submitForm() {
-    if (!validateForm()) return;
-
-    if (isEditMode.value) {
-      updatePrediction();
-    } else {
-      addPrediction();
+  // Remove nasabah from temp list
+  void removeNasabahFromTemp(int index) {
+    if (index >= 0 && index < tempNasabahList.length) {
+      tempNasabahList.removeAt(index);
     }
   }
 }

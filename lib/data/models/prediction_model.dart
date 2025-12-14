@@ -1,79 +1,107 @@
 // File: prediction_model.dart
-// Deskripsi: Model data untuk prediksi Random Forest (dummy data).
+// Deskripsi: Model data untuk prediksi nasabah BPR Bogor Jabar.
+// Menyimpan data nasabah dan hasil prediksi Random Forest (dummy).
 
-class PredictionModel {
+class NasabahModel {
   final String id;
-  final String namaBalita;
-  final String tanggalLahir;
+  final String idNasabah;
+  final int usia;
   final String jenisKelamin;
-  final double beratBadan; // kg
-  final double tinggiBadan; // cm
-  final double lingkarLengan; // cm
-  final double lingkarKepala; // cm
-  final String hasilPrediksi; // Normal, Stunting Ringan, Stunting Berat
-  final String statusGizi;
-  final DateTime tanggalPrediksi;
+  final String pekerjaan;
+  final double pendapatanBulanan;
+  final int frekuensiTransaksi;
+  final double saldoRataRata;
+  final int lamaMenjadiNasabah;
+  final String statusNasabah;
+  final String prediksiAwal;
+  final List<String> prediksiPohon;
+  final String finalPrediksi;
+  final String evaluasi;
 
-  PredictionModel({
+  NasabahModel({
     required this.id,
-    required this.namaBalita,
-    required this.tanggalLahir,
+    required this.idNasabah,
+    required this.usia,
     required this.jenisKelamin,
-    required this.beratBadan,
-    required this.tinggiBadan,
-    required this.lingkarLengan,
-    required this.lingkarKepala,
-    required this.hasilPrediksi,
-    required this.statusGizi,
-    required this.tanggalPrediksi,
+    required this.pekerjaan,
+    required this.pendapatanBulanan,
+    required this.frekuensiTransaksi,
+    required this.saldoRataRata,
+    required this.lamaMenjadiNasabah,
+    required this.statusNasabah,
+    required this.prediksiAwal,
+    required this.prediksiPohon,
+    required this.finalPrediksi,
+    required this.evaluasi,
   });
 
-  PredictionModel copyWith({
+  NasabahModel copyWith({
     String? id,
-    String? namaBalita,
-    String? tanggalLahir,
+    String? idNasabah,
+    int? usia,
     String? jenisKelamin,
-    double? beratBadan,
-    double? tinggiBadan,
-    double? lingkarLengan,
-    double? lingkarKepala,
-    String? hasilPrediksi,
-    String? statusGizi,
-    DateTime? tanggalPrediksi,
+    String? pekerjaan,
+    double? pendapatanBulanan,
+    int? frekuensiTransaksi,
+    double? saldoRataRata,
+    int? lamaMenjadiNasabah,
+    String? statusNasabah,
+    String? prediksiAwal,
+    List<String>? prediksiPohon,
+    String? finalPrediksi,
+    String? evaluasi,
   }) {
-    return PredictionModel(
+    return NasabahModel(
       id: id ?? this.id,
-      namaBalita: namaBalita ?? this.namaBalita,
-      tanggalLahir: tanggalLahir ?? this.tanggalLahir,
+      idNasabah: idNasabah ?? this.idNasabah,
+      usia: usia ?? this.usia,
       jenisKelamin: jenisKelamin ?? this.jenisKelamin,
-      beratBadan: beratBadan ?? this.beratBadan,
-      tinggiBadan: tinggiBadan ?? this.tinggiBadan,
-      lingkarLengan: lingkarLengan ?? this.lingkarLengan,
-      lingkarKepala: lingkarKepala ?? this.lingkarKepala,
-      hasilPrediksi: hasilPrediksi ?? this.hasilPrediksi,
-      statusGizi: statusGizi ?? this.statusGizi,
-      tanggalPrediksi: tanggalPrediksi ?? this.tanggalPrediksi,
+      pekerjaan: pekerjaan ?? this.pekerjaan,
+      pendapatanBulanan: pendapatanBulanan ?? this.pendapatanBulanan,
+      frekuensiTransaksi: frekuensiTransaksi ?? this.frekuensiTransaksi,
+      saldoRataRata: saldoRataRata ?? this.saldoRataRata,
+      lamaMenjadiNasabah: lamaMenjadiNasabah ?? this.lamaMenjadiNasabah,
+      statusNasabah: statusNasabah ?? this.statusNasabah,
+      prediksiAwal: prediksiAwal ?? this.prediksiAwal,
+      prediksiPohon: prediksiPohon ?? this.prediksiPohon,
+      finalPrediksi: finalPrediksi ?? this.finalPrediksi,
+      evaluasi: evaluasi ?? this.evaluasi,
     );
   }
 
-  // Generate dummy result based on input (simulating Random Forest)
-  static String generateDummyResult(double tinggi, double berat) {
-    final bmi = berat / ((tinggi / 100) * (tinggi / 100));
-    if (bmi < 14) return 'Stunting Berat';
-    if (bmi < 16) return 'Stunting Ringan';
-    return 'Normal';
+  // Generate dummy prediction result
+  static String generateDummyPrediksi(String statusNasabah) {
+    return statusNasabah == 'Aktif' ? 'Aktif' : 'Tidak Aktif';
   }
 
-  static String generateStatusGizi(String hasil) {
-    switch (hasil) {
-      case 'Normal':
-        return 'Gizi Baik';
-      case 'Stunting Ringan':
-        return 'Gizi Kurang';
-      case 'Stunting Berat':
-        return 'Gizi Buruk';
-      default:
-        return 'Tidak Diketahui';
-    }
+  // Generate dummy tree predictions
+  static List<String> generateDummyPohonPrediksi() {
+    return ['Aktif', 'Tidak Aktif', 'Aktif'];
   }
+}
+
+// Model untuk menyimpan satu session prediksi (bisa berisi banyak nasabah)
+class PredictionSessionModel {
+  final String id;
+  final DateTime tanggalPrediksi;
+  final List<NasabahModel> nasabahList;
+  final double akurasi;
+
+  PredictionSessionModel({
+    required this.id,
+    required this.tanggalPrediksi,
+    required this.nasabahList,
+    required this.akurasi,
+  });
+
+  String get formattedDate {
+    final d = tanggalPrediksi;
+    return 'PREDICT_${d.day.toString().padLeft(2, '0')}-${d.month.toString().padLeft(2, '0')}-${d.year}_${d.hour.toString().padLeft(2, '0')}:${d.minute.toString().padLeft(2, '0')}:${d.second.toString().padLeft(2, '0')}';
+  }
+
+  int get jumlahData => nasabahList.length;
+
+  int get nasabahAktif => nasabahList.where((n) => n.finalPrediksi == 'Aktif').length;
+
+  int get nasabahTidakAktif => nasabahList.where((n) => n.finalPrediksi == 'Tidak Aktif').length;
 }

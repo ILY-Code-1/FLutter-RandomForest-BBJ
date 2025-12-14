@@ -1,5 +1,5 @@
 // File: main.dart
-// Deskripsi: Entry point aplikasi Flutter Random Forest Stunting Prediction.
+// Deskripsi: Entry point aplikasi BPR Bogor Jabar Random Forest.
 // Menggunakan GetX untuk state management dan routing.
 
 import 'package:flutter/material.dart';
@@ -18,7 +18,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GetMaterialApp(
-      title: 'Prediksi Stunting',
+      title: 'BPR Bogor Jabar Random Forest',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       initialRoute: AppRoutes.main,
