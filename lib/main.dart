@@ -1,6 +1,5 @@
 // File: main.dart
-// Deskripsi: Entry point aplikasi BPR Bogor Jabar Random Forest.
-// Menggunakan GetX untuk state management dan routing.
+// Entry point aplikasi BPR Bogor Jabar Random Forest.
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -9,6 +8,7 @@ import 'routes/app_routes.dart';
 import 'routes/app_pages.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(const MyApp());
 }
 

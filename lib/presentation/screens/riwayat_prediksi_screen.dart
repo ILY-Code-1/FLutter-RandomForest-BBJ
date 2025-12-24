@@ -1,6 +1,5 @@
 // File: riwayat_prediksi_screen.dart
-// Deskripsi: Screen untuk menampilkan daftar riwayat prediksi.
-// Setiap item berupa card hijau dengan format tanggal dan tombol aksi.
+// Screen untuk menampilkan daftar riwayat prediksi dari SQLite
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -25,30 +24,35 @@ class RiwayatPrediksiScreen extends StatelessWidget {
       ),
       body: SafeArea(
         child: Obx(() {
+          if (controller.isLoading.value) {
+            return const Center(
+              child: CircularProgressIndicator(color: AppColors.primary),
+            );
+          }
+
           if (controller.predictionSessions.isEmpty) {
             return _buildEmptyState();
           }
 
-          return LayoutBuilder(
-            builder: (context, constraints) {
-              return ListView.builder(
-                padding: const EdgeInsets.all(16),
-                itemCount: controller.predictionSessions.length,
-                itemBuilder: (context, index) {
-                  final session = controller.predictionSessions[index];
-                  return RiwayatListItem(
-                    session: session,
-                    onView: () {
-                      controller.setCurrentSession(session);
-                      Get.toNamed(AppRoutes.detail);
-                    },
-                    onDelete: () {
-                      _showDeleteDialog(context, controller, session.id);
-                    },
-                  );
-                },
-              );
-            },
+          return RefreshIndicator(
+            onRefresh: () => controller.loadSessions(),
+            child: ListView.builder(
+              padding: const EdgeInsets.all(16),
+              itemCount: controller.predictionSessions.length,
+              itemBuilder: (context, index) {
+                final session = controller.predictionSessions[index];
+                return RiwayatListItem(
+                  session: session,
+                  onView: () {
+                    controller.setCurrentSession(session);
+                    Get.toNamed(AppRoutes.detail);
+                  },
+                  onDelete: () {
+                    _showDeleteDialog(context, controller, session.id, session.flag);
+                  },
+                );
+              },
+            ),
           );
         }),
       ),
@@ -85,25 +89,68 @@ class RiwayatPrediksiScreen extends StatelessWidget {
   }
 
   void _showDeleteDialog(
-      BuildContext context, PredictionController controller, String id) {
+      BuildContext context, PredictionController controller, String id, String flag) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Hapus Riwayat'),
-        content: const Text('Apakah Anda yakin ingin menghapus riwayat ini?'),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        title: Row(
+          children: [
+            Icon(Icons.warning_amber_rounded, color: AppColors.warning, size: 28),
+            const SizedBox(width: 8),
+            const Text('Hapus Riwayat'),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Apakah Anda yakin ingin menghapus riwayat prediksi ini?'),
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: AppColors.background,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                flag,
+                style: AppTextStyles.bodySmall.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Data yang dihapus tidak dapat dikembalikan.',
+              style: AppTextStyles.caption.copyWith(
+                color: AppColors.error,
+              ),
+            ),
+          ],
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Batal'),
+            child: Text(
+              'Batal',
+              style: TextStyle(color: AppColors.textSecondary),
+            ),
           ),
-          TextButton(
+          ElevatedButton(
             onPressed: () {
               Navigator.pop(context);
               controller.deleteSession(id);
             },
-            child: Text(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.error,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            child: const Text(
               'Hapus',
-              style: TextStyle(color: AppColors.error),
+              style: TextStyle(color: Colors.white),
             ),
           ),
         ],

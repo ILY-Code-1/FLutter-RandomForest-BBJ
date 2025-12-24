@@ -1,12 +1,10 @@
 // File: form_prediksi_screen.dart
-// Deskripsi: Screen form untuk input data prediksi nasabah.
-// Form dengan semua field yang diminta, scrollable dengan background hijau.
+// Screen form untuk input data prediksi nasabah
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import '../../controllers/prediction_controller.dart';
-import '../../controllers/navigation_controller.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../widgets/custom_app_bar.dart';
@@ -27,24 +25,32 @@ class FormPrediksiScreen extends StatelessWidget {
         title: 'MULAI PREDIKSI',
       ),
       body: SafeArea(
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            return SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildFormSection(controller, constraints),
-                  const SizedBox(height: 16),
-                  _buildTempList(controller),
-                  const SizedBox(height: 16),
-                  _buildSubmitButton(controller),
-                  const SizedBox(height: 32),
-                ],
-              ),
+        child: Obx(() {
+          if (controller.isLoading.value) {
+            return const Center(
+              child: CircularProgressIndicator(color: Colors.white),
             );
-          },
-        ),
+          }
+
+          return LayoutBuilder(
+            builder: (context, constraints) {
+              return SingleChildScrollView(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildFormSection(controller, constraints),
+                    const SizedBox(height: 16),
+                    _buildTempList(controller),
+                    const SizedBox(height: 16),
+                    _buildSubmitButton(controller),
+                    const SizedBox(height: 32),
+                  ],
+                ),
+              );
+            },
+          );
+        }),
       ),
     );
   }
@@ -71,14 +77,12 @@ class FormPrediksiScreen extends StatelessWidget {
             style: AppTextStyles.h3,
           ),
           const SizedBox(height: 16),
-          // ID Nasabah
           CustomTextField(
             label: 'ID Nasabah',
             hint: 'Masukkan ID Nasabah',
             controller: controller.idNasabahController,
           ),
           const SizedBox(height: 16),
-          // Usia
           CustomTextField(
             label: 'Usia',
             hint: 'Masukkan usia',
@@ -87,7 +91,6 @@ class FormPrediksiScreen extends StatelessWidget {
             inputFormatters: [FilteringTextInputFormatter.digitsOnly],
           ),
           const SizedBox(height: 16),
-          // Jenis Kelamin
           Obx(() => CustomDropdown<String>(
                 label: 'Jenis Kelamin',
                 value: controller.jenisKelamin.value,
@@ -100,14 +103,12 @@ class FormPrediksiScreen extends StatelessWidget {
                 },
               )),
           const SizedBox(height: 16),
-          // Pekerjaan
           CustomTextField(
             label: 'Pekerjaan',
             hint: 'Masukkan pekerjaan',
             controller: controller.pekerjaanController,
           ),
           const SizedBox(height: 16),
-          // Pendapatan Bulanan
           CustomTextField(
             label: 'Pendapatan Bulanan',
             hint: 'Masukkan pendapatan bulanan',
@@ -121,7 +122,6 @@ class FormPrediksiScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
-          // Frekuensi Transaksi
           CustomTextField(
             label: 'Frekuensi Transaksi',
             hint: 'Masukkan frekuensi transaksi per bulan',
@@ -135,7 +135,6 @@ class FormPrediksiScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
-          // Saldo Rata-Rata
           CustomTextField(
             label: 'Saldo Rata-Rata',
             hint: 'Masukkan saldo rata-rata',
@@ -151,7 +150,6 @@ class FormPrediksiScreen extends StatelessWidget {
           const SizedBox(height: 24),
           const Divider(),
           const SizedBox(height: 16),
-          // Lama Menjadi Nasabah
           CustomTextField(
             label: 'Lama Menjadi Nasabah',
             hint: 'Masukkan lama menjadi nasabah (tahun)',
@@ -160,7 +158,6 @@ class FormPrediksiScreen extends StatelessWidget {
             inputFormatters: [FilteringTextInputFormatter.digitsOnly],
           ),
           const SizedBox(height: 16),
-          // Status Nasabah
           Obx(() => CustomDropdown<String>(
                 label: 'Status Nasabah',
                 value: controller.statusNasabah.value,
@@ -173,7 +170,6 @@ class FormPrediksiScreen extends StatelessWidget {
                 },
               )),
           const SizedBox(height: 24),
-          // Action Buttons
           _buildActionButtons(controller),
         ],
       ),
@@ -246,7 +242,6 @@ class FormPrediksiScreen extends StatelessWidget {
             const SizedBox(height: 12),
             ...controller.tempNasabahList.asMap().entries.map((entry) {
               final index = entry.key;
-              final nasabah = entry.value;
               return Container(
                 margin: const EdgeInsets.only(bottom: 8),
                 padding: const EdgeInsets.all(12),
@@ -262,11 +257,11 @@ class FormPrediksiScreen extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            nasabah.idNasabah,
+                            controller.getTempIdNasabah(index),
                             style: AppTextStyles.labelLarge,
                           ),
                           Text(
-                            '${nasabah.pekerjaan} - ${nasabah.statusNasabah}',
+                            controller.getTempNasabahInfo(index),
                             style: AppTextStyles.bodySmall,
                           ),
                         ],
@@ -292,14 +287,11 @@ class FormPrediksiScreen extends StatelessWidget {
 
   Widget _buildSubmitButton(PredictionController controller) {
     return Obx(() => CustomButton(
-          text: 'SUBMIT',
+          text: 'SUBMIT PREDIKSI',
           type: ButtonType.primary,
           onPressed: controller.tempNasabahList.isEmpty
               ? null
-              : () {
-                  controller.submitPrediction();
-                  Get.find<NavigationController>().goToHistory();
-                },
+              : () => controller.submitPrediction(),
         ));
   }
 
